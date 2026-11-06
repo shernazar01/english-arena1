@@ -1,8 +1,6 @@
-
-// English Arena Cloud connection: username login, profiles and leaderboard.
+// English Arena Cloud: username login, profiles and leaderboard.
 
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import type { Json } from "@/integrations/supabase/types";
 // @ts-ignore - Arena is untyped game code
 import { freshDaily } from "./Arena";
@@ -34,21 +32,6 @@ export const safeGroup = (g?: string) =>
   (GROUP_IDS as readonly string[]).includes(g ?? "")
     ? (g as string)
     : "kichik";
-
-// Eski Site.tsx bilan vaqtincha moslik uchun.
-// Keyin Google kirishini ham butunlay olib tashlaymiz.
-export async function signInGoogle(): Promise<string | null> {
-  const result = await lovable.auth.signInWithOAuth("google", {
-    redirect_uri: window.location.origin,
-  });
-
-  if (result.error) {
-    console.error("signInGoogle", result.error);
-    return "Google orqali kirib bo‘lmadi.";
-  }
-
-  return null;
-}
 
 export const signOut = async () => {
   const { error } = await supabase.auth.signOut();
@@ -113,7 +96,9 @@ export async function saveProfile(id: string, p: LocalProfile) {
     .from("profiles")
     .upsert(toRow(id, p));
 
-  if (error) console.error("saveProfile", error);
+  if (error) {
+    console.error("saveProfile", error);
+  }
 }
 
 export async function fetchBoard(
@@ -134,7 +119,7 @@ export async function fetchBoard(
   return data;
 }
 
-// Username uchun ichki texnik email.
+// Username ichki texnik emailga aylantiriladi.
 // Foydalanuvchi haqiqiy email kiritmaydi.
 function usernameToEmail(username: string) {
   return `${username.trim().toLowerCase()}@users.english-arena.invalid`;
@@ -163,7 +148,7 @@ function authMsg(message?: string) {
   }
 
   if (s.includes("email")) {
-    return "Ro‘yxatdan o‘tish sozlamasida xatolik. Administrator tekshirishi kerak.";
+    return "Ro‘yxatdan o‘tishda email sozlamasi bilan bog‘liq xatolik yuz berdi.";
   }
 
   return "Xatolik yuz berdi. Qaytadan urinib ko‘r.";
@@ -199,7 +184,7 @@ export async function usernameSignUp(
   }
 
   if (!data.session) {
-    return "Email tasdiqlash yoqilgan. Username orqali kirish uchun bu sozlamani o‘zgartirish kerak.";
+    return "Hisob yaratildi, lekin email tasdiqlash talab qilinyapti. Auth sozlamasini tekshirish kerak.";
   }
 
   return null;
